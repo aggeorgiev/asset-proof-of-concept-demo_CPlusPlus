@@ -16,7 +16,7 @@ PubSub::PubSub()
 
 PubSub::~PubSub()
 {
-    //delete &subscribers;
+    //dtor
 }
 
 bool PubSub::define(string topic)
