@@ -30,7 +30,6 @@ namespace rage
             Dialogue interact(std::string actor, std::string player, int response);
             Dialogue interact(std::string actor, std::string player, std::string response = "");
             void loadScript(std::string actor, const char* fileName);
-            int interact(int responseId = 0);
         private:
             int findStateIndex(std::string actor, std::string player);
             void updateState(std::string actor, std::string player, int state);

@@ -11,7 +11,7 @@ namespace rage
 {
 	class PubSub
 	{
-		public:
+        public:
             static PubSub& getInstance();
             bool define(std::string topic);
             bool unsubscribe(int token);
@@ -55,7 +55,7 @@ namespace rage
                 return false;
             };
 
-		private:
+        private:
             PubSub() : subUId(1){};
             ~PubSub();
             PubSub(const PubSub&);
