@@ -1,10 +1,8 @@
-#include <sstream>
-#include <string>
-#include <typeinfo>
-#include <vector>
-
 #include <AssetManager.h>
 
+#include <sstream>
+
+using namespace std;
 using namespace rage;
 
 AssetManager& AssetManager::getInstance()
@@ -13,57 +11,70 @@ AssetManager& AssetManager::getInstance()
     return instance;
 }
 
-string AssetManager::uuidGenerator(string name)
+string AssetManager::registerAssetInstance(IAsset& asset, string clazz)
 {
-    stringstream s;
-    s << name << "_" << ++idGenerator;
-    return s.str();
-}
+    for(map<string,IAsset*>::iterator itr = assets.begin(); itr != assets.end(); ++itr)
+    {
+        if (itr->second == &asset)
+        {
+            return itr->first;
+        }
+    }
 
-string AssetManager::registerAssetInstance(IAsset& asset)
-{
-    string uuid = uuidGenerator(asset.getClassName());
-    asset.setId(uuid);
-    assets[uuid] = &asset;
-    return uuid;
+    stringstream s;
+    s << clazz << "_" << ++idGenerator;
+    string id = s.str();
+    assets[id] = &asset;
+
+    return id;
 }
 
 bool AssetManager::unregisterAssetInstance(string id)
 {
-    map<string, IAsset *>::iterator it = assets.find(id);
-    if (it != assets.end()) {
-        assets.erase(it);
+    map<string, IAsset *>::iterator itr = assets.find(id);
+    if (itr != assets.end())
+    {
+        assets.erase(itr);
         return true;
     }
+
     return false;
 }
 
 IAsset* AssetManager::findAssetById(string id)
 {
-    map<string, IAsset *>::iterator it = assets.find(id);
-    if (it != assets.end()) {
-        return it->second;
+    map<string, IAsset *>::iterator itr = assets.find(id);
+    if (itr != assets.end())
+    {
+        return itr->second;
     }
+
     return NULL;
 }
 
-vector<IAsset*> AssetManager::findAll()
+IAsset* AssetManager::findAssetByClass(string className)
 {
-    vector<IAsset*> results;
-    for(map<string,IAsset*>::iterator it = assets.begin(); it != assets.end(); ++it) {
-        results.push_back(it->second);
-    }
-    return results;
-}
-
-
- vector<IAsset*> AssetManager::findAssetsByClass(string className)
- {
-    vector<IAsset*> match_results;
-    for(map<string,IAsset*>::iterator it = assets.begin(); it != assets.end(); ++it) {
-        if(className == it->second->getClassName()) {
-            match_results.push_back(it->second);
+    for(map<string,IAsset*>::iterator itr = assets.begin(); itr != assets.end(); ++itr)
+    {
+        if(className == itr->second->getClassName())
+        {
+            return itr->second;
         }
     }
-    return match_results;
+
+    return NULL;
+ }
+
+ list<IAsset*> AssetManager::findAssetsByClass(string className)
+ {
+    list<IAsset*> found;
+    for(map<string,IAsset*>::iterator itr = assets.begin(); itr != assets.end(); ++itr)
+    {
+        if(className == itr->second->getClassName())
+        {
+            found.push_back(itr->second);
+        }
+    }
+
+    return found;
  }

@@ -1,75 +1,71 @@
-#include <iostream>
-#include <vector>
-
 #include <AssetManager.h>
+#include <Asset.h>
 #include <Logger.h>
-#include <Dialog.h>
+#include <DialogueAsset.h>
 #include <PubSub.h>
+
+#include <iostream>
 
 using namespace std;
 using namespace rage;
 
+class MyLogger
+{
+    public:
+        void log(const void* message)
+        {
+            cout << "Custom Logging: " << (char*)message << endl;
+        }
+};
+
+void foo(const char* message)
+{
+    cout << "Foo: " << message << endl;
+}
+
 int main()
 {
-    Logger* log1 = new Logger();
-    Logger* log2 = new Logger();
-    Logger* log3 = new Logger();
+    Asset* asset1 = new Asset();
+    Asset* asset2 = new Asset();
+    Logger* asset3 = new Logger();
+    Logger* asset4 = new Logger();
+    DialogueAsset* asset5 = new DialogueAsset();
 
-    AssetManager& am = AssetManager::getInstance();
+    asset3->log("Asset1: " + asset1->getClassName() + ", " + asset1->getId());
+    asset3->log("Asset2: " + asset2->getClassName() + ", " + asset2->getId());
+    asset3->log("Asset3: " + asset3->getClassName() + ", " + asset3->getId());
+    asset3->log("Asset4: " + asset4->getClassName() + ", " + asset4->getId());
+    asset3->log("Asset5: " + asset5->getClassName() + ", " + asset5->getId());
 
-    //AssetManager::findAll
-    vector<IAsset*> assets = am.findAll();
-    for(int i=0, size=assets.size(); i<size; i++) {
-        cout << "[Asset] " << assets.at(i)->getId() << endl;
-    }
+    asset3->log("LogByLogger: " + asset3->getClassName() + ", " + asset3->getId());
 
-    //AssetManager::unregisterAssetInstance
-    delete log2;
-    assets = am.findAll();
-    for(int i=0, size=assets.size(); i<size; i++) {
-        cout << "[Asset] " << assets.at(i)->getId() << endl;
-    }
+    asset1->publicMethod("Hello World (console.log)");
 
-    //AssetManager::findAssetById
-    Logger* logger = dynamic_cast<Logger*>(am.findAssetById("Logger_1"));
-    logger->log("Hello, World!");
+    MyLogger myLogger;
+    asset4->OnLog += new LogDelegate<MyLogger>(&myLogger, &MyLogger::log);
 
-    //AssetManager::findAssetsByClass
-    vector<IAsset*> match_results = am.findAssetsByClass("Logger");
-    for(int i=0, size=match_results.size(); i<size; i++) {
-        IAsset* asset = match_results.at(i);
-        Logger* logger = dynamic_cast<Logger*>(asset);
-        if (logger) {
-            logger->log("Hello, World!");
-        }
-    }
+    PubSub::getInstance().define("EventSystem.Msg");
 
-    //Subscribe and Publish
-    PubSub& pubsub  = PubSub::getInstance();
-    pubsub.define("Rage.Event");
-    pubsub.subscribe("Rage.Event", log1, static_cast< IAsset::CallbackType > ( & Logger::log));
-    pubsub.subscribe("Rage.Event", log3, static_cast< IAsset::CallbackType > ( & Logger::log));
-    pubsub.publish("Rage.Event", "Hello, World!");
+    PubSub::getInstance().subscribe("EventSystem.Msg", [asset4](char* message){asset4->log(message);});
+    PubSub::getInstance().subscribe("EventSystem.Msg", static_cast<std::function<void(char*)>>(foo));
 
-    //Unsubscribe Asset and Publish
-    pubsub.unsubscribe("Rage.Event", log3);
-    pubsub.publish("Rage.Event", "Hello, World!");
+    PubSub::getInstance().publish("EventSystem.Msg", "Hellow, World!");
 
-    Logger * dialogLogger = new Logger();
-    pubsub.define("Rage.Dialog.Event");
-    pubsub.subscribe("Rage.Dialog.Event", dialogLogger, static_cast< IAsset::CallbackType > ( & Logger::log));
+    string assetId = AssetManager::getInstance().registerAssetInstance(*asset4, asset4->getClassName());
+    cout << assetId << endl;
 
-    Dialog* dialog = new Dialog("actor", "player");
-    dialog->load("script.txt");
-    int reponseId;
-    while (true) {
-        dialog->interact();
-        cout << "Option: "; cin >> reponseId;
-        cout << endl;
-        if (dialog->interact(reponseId) == -1) {
-            break;
-        }
-    }
+    asset5->loadScript("me", "script.txt");
+
+    asset5->interact("me", "player", "banana");
+
+    asset5->interact("me", "player");
+    asset5->interact("me", "player", 2); //Answer id 2
+
+    asset5->interact("me", "player");
+    asset5->interact("me", "player", 6); //Answer id 6
+
+    asset5->interact("me", "player");
+
 
     return 0;
 }

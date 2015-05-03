@@ -1,21 +1,21 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <string>
+#include <BaseAsset.h>
+#include <LogEvent.h>
 
-#include <IAsset.h>
-
-namespace rage {
-    class Logger : public IAsset
+namespace rage
+{
+    class Logger : public BaseAsset
     {
         public:
             Logger();
             virtual ~Logger();
-            virtual string getClassName() {return "Logger";};
-            virtual void log(string message);
-            typedef void (Logger::*LogFunction)(string);
-        protected:
+            virtual void log(std::string message);
+            LogEvent OnLog;
         private:
+            void doLog(const void* message);
     };
 }
+
 #endif // LOGGER_H

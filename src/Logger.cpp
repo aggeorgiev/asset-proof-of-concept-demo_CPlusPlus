@@ -1,22 +1,31 @@
-#include <AssetManager.h>
 #include <Logger.h>
+
+#include <AssetManager.h>
+
+#include <iostream>
 
 using namespace std;
 using namespace rage;
 
-Logger::Logger()
+Logger::Logger() : BaseAsset("Logger")
 {
-    AssetManager& am  = AssetManager::getInstance();
-    am.registerAssetInstance(*this);
+    this->OnLog += new LogDelegate<Logger>(this, &Logger::doLog);
 }
 
 void Logger::log(string message)
 {
-    cout << "[" << this->getId() << "] " << message << endl;
+   OnLog(message.c_str());
 }
 
 Logger::~Logger()
 {
-    AssetManager& am  = AssetManager::getInstance();
-    am.unregisterAssetInstance(this->getId());
+    //dtor
+}
+
+void Logger::doLog(const void* message)
+{
+    if (OnLog.getInvocationList().size() == 1)
+    {
+        cout << "[" << this->getId() << "] " << (char*)message << endl;
+    }
 }

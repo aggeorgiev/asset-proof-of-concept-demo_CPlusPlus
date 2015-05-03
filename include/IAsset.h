@@ -3,19 +3,14 @@
 
 #include <string>
 
-using namespace std;
-
-namespace rage {
+namespace rage
+{
     class IAsset
     {
         public:
-            virtual string getClassName() = 0;
-            void setId(string id) {this->id = id;};
-            string getId() {return this->id;};
-            typedef void (IAsset::*CallbackType)(string);
-        protected:
-        private:
-            string id;
+            virtual std::string getClassName() = 0;
+            virtual std::string getId() = 0;
     };
 }
+
 #endif // IASSET_H
